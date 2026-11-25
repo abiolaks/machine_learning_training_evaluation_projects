@@ -1,0 +1,84 @@
+{
+  "name": "Naive Inference Router",
+  "description": "Unguarded single-path inference router with wide max_tokens=4096 and no criticality, length, or drift checks.",
+  "data": {
+    "nodes": [
+      {
+        "id": "ChatInput-01",
+        "type": "genericNode",
+        "position": { "x": 100, "y": 250 },
+        "data": {
+          "type": "ChatInput",
+          "node": {
+            "display_name": "Incoming Workload Prompt",
+            "description": "Receives raw prompt text without ISL/OSL or task_criticality inspection.",
+            "template": {
+              "input_value": {
+                "type": "str",
+                "value": "",
+                "display_name": "Prompt Text"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "Prompt-01",
+        "type": "genericNode",
+        "position": { "x": 480, "y": 250 },
+        "data": {
+          "type": "Prompt",
+          "node": {
+            "display_name": "Unguarded Single-Path Policy",
+            "description": "Forwards all requests with wide context=4096, max_new_tokens=4096, precision=FP16, concurrency=unbounded.",
+            "template": {
+              "template": {
+                "type": "prompt",
+                "value": "[ROUTE: default_single_path | precision=FP16 | max_isl=4096 | max_osl=4096 | drift_guard=OFF]\nPrompt: {user_prompt}"
+              },
+              "user_prompt": {
+                "type": "str",
+                "value": ""
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "ChatOutput-01",
+        "type": "genericNode",
+        "position": { "x": 880, "y": 250 },
+        "data": {
+          "type": "ChatOutput",
+          "node": {
+            "display_name": "Routed Inference Dispatch",
+            "description": "Outputs unguarded routing decision.",
+            "template": {
+              "input_value": {
+                "type": "str",
+                "value": ""
+              }
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "ChatInput-01",
+        "target": "Prompt-01",
+        "sourceHandle": "ChatInput-01-message",
+        "targetHandle": "Prompt-01-user_prompt"
+      },
+      {
+        "id": "edge-2",
+        "source": "Prompt-01",
+        "target": "ChatOutput-01",
+        "sourceHandle": "Prompt-01-prompt",
+        "targetHandle": "ChatOutput-01-input_value"
+      }
+    ]
+  }
+}
+
